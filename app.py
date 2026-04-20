@@ -1,24 +1,25 @@
+import os
+import psycopg2
 from flask import Flask, render_template, request, jsonify, session
-import sqlite3
 
-# Ajustamos la ruta de la carpeta de templates hacia la carpeta FRONTEND
 app = Flask(__name__, template_folder='../FRONTEND')
 app.secret_key = 'clave_secreta_super_segura'
 
-# El archivo de base de datos se guardará en la carpeta BACKEND al ejecutar
-DB_NAME = 'encuesta.db'
+# Leemos la URL de la base de datos de las variables de entorno (Render las cargará)
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    conn.execute('CREATE TABLE IF NOT EXISTS votos (id INTEGER PRIMARY KEY, eleccion TEXT)')
+    # Creamos la tabla si no existe
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cur = conn.cursor()
+    # SERIAL es el equivalente a autoincrement en Postgres
+    cur.execute('CREATE TABLE IF NOT EXISTS votos (id SERIAL PRIMARY KEY, eleccion TEXT)')
     conn.commit()
+    cur.close()
     conn.close()
 
+# Iniciamos la DB al arrancar
 init_db()
-
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 @app.route('/votar', methods=['POST'])
 def votar():
@@ -29,9 +30,12 @@ def votar():
     eleccion = data.get('opcion')
 
     if eleccion in ['ambas', 'caja_a']:
-        conn = sqlite3.connect(DB_NAME)
-        conn.execute("INSERT INTO votos (eleccion) VALUES (?)", (eleccion,))
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cur = conn.cursor()
+        # ¡OJO! Postgres usa %s, no ?
+        cur.execute("INSERT INTO votos (eleccion) VALUES (%s)", (eleccion,))
         conn.commit()
+        cur.close()
         conn.close()
         
         session['ya_voto'] = True
@@ -39,6 +43,7 @@ def votar():
     
     return jsonify({"status": "error", "message": "Opción inválida"}), 400
 
+# ... resto de tu código
 import os
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
