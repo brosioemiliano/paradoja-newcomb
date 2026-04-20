@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paradoja de Newcomb</title>
+    <style>
+        /* Esto es lo que le da el estilo a tu página */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            line-height: 1.6; 
+            background-color: #f4f4f9; 
+            display: flex;
+            justify-content: center;
+        }
+        .card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 { color: #333; font-size: 1.5rem; text-align: center; }
+        .opciones { margin-top: 25px; }
+        button { 
+            display: block; 
+            width: 100%; 
+            padding: 15px; 
+            margin: 10px 0; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 8px;
+            background: #007bff; 
+            color: white; 
+            transition: background 0.3s;
+        }
+        button:hover { background: #0056b3; }
+        #mensaje { text-align: center; font-weight: bold; margin-top: 20px; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>¿Qué harías frente a la IA?</h1>
+        <p>Imagina que una <strong>supercomputadora</strong> ha analizado tus patrones de pensamiento, tu personalidad y tus decisiones pasadas con total exactitud. Ella te pone a prueba con un experimento simple:</p>
+        
+        <p>Frente a ti hay dos cajas:</p>
+        <ul>
+            <li><strong>Caja A (Opaca):</strong> Contiene $1.000.000 o nada.</li>
+            <li><strong>Caja B (Transparente):</strong> Siempre contiene $1.000.</li>
+        </ul>
+        
+        <p><strong>La regla es la siguiente:</strong></p>
+        <p>La IA hizo su predicción <strong>ayer</strong>. Si ella predijo que tomarías <strong>ambas cajas</strong>, dejó la Caja A vacía. Si predijo que tomarías <strong>solo la Caja A</strong>, depositó el millón en ella.</p>
+
+        <p><strong>El dilema:</strong></p>
+        <ul>
+            <li><strong>Lógica "tomar todo":</strong> El dinero ya está ahí. ¿Por qué no llevarte los $1.000 extra?</li>
+            <li><strong>Lógica "estrategia":</strong> Para ganar el millón, debes demostrar que eres el tipo de persona que solo toma la Caja A.</li>
+        </ul>
+
+        <div class="opciones">
+            <button onclick="enviarVoto('caja_a')">Elegir solo la Caja A</button>
+            <button onclick="enviarVoto('ambas')">Elegir ambas cajas</button>
+        </div>
+        
+        <p id="mensaje"></p>
+    </div>
+
+    <script>
+        async function enviarVoto(opcion) {
+            const response = await fetch('/votar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({opcion: opcion})
+            });
+            const result = await response.json();
+            document.getElementById('mensaje').innerText = result.message;
+        }
+    </script>
+</body>
+</html>
